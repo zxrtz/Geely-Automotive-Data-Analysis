@@ -1,0 +1,320 @@
+---
+title: "STAT456 Group Project"
+author: "Dylan Nguyen, Blake Pohevitz, Akanksha Sharma"
+date: "2024-11-23"
+output:
+  html_document:
+    df_print: paged
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+set.seed(1234)
+```
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(leaps)
+library(tidyverse)
+library(GGally)
+library(glmnet)
+library(caret)
+```
+
+Processing dataset
+
+```{r}
+setwd("C:/Users/Dylan/Desktop/GMU/fall 2024/stat456/group project 3")
+data <- read.csv("CarPrice_Assignment.csv")
+```
+
+```{r}
+datanew <- data %>% 
+  mutate(fueltype = recode_factor(fueltype, '0' = "gas", '1' = "diesel")) %>%
+  mutate(aspiration = recode_factor(aspiration,'0'='std','1'='turbo')) %>%
+  mutate(doornumber = recode_factor(doornumber,'0'='two','1'='four')) %>%
+  mutate(carbody = recode_factor(carbody,'0'='hatchback','1'='wagon','2'='sedan','3'='convertible','4'='hardtop')) %>%
+  mutate(drivewheel = recode_factor(drivewheel,'0'='fwd','1'='rwd','2'='4wd')) %>%
+  mutate(enginelocation = recode_factor(enginelocation,'0'='front','1'='back')) %>%
+  mutate(enginetype = recode_factor(enginetype,'0'='dohc','1'='dohcv','2'='l','3'='ohc','4'='ohcf','5'='ohcv','6'='rotor')) %>%
+  mutate(cylindernumber = recode_factor(cylindernumber,'0'='two','1'='three','2'='four','3'='five','4'='six','8'='eight','9'='twelve')) %>%
+  mutate(fuelsystem = recode_factor(fuelsystem,'0'='1bbl','1'='2bbl','2'='idi','3'='mfi','4'='mpfi','8'='spdi','9'='spfi'))
+colnames(datanew)
+```
+
+#Splitting the Data into Train and Test Dataset
+```{r}
+data.train <- datanew[1:165,]
+data.test <- datanew[166:205,]
+```
+
+
+
+
+#Exploring the relationships between Prices and other variables.
+```{r}
+numeric_columns <- sapply(data.train, is.numeric)
+numeric_data <- data.train[, numeric_columns]
+
+ggplot(data.train, aes(x = symboling, y = price)) + geom_point() + geom_smooth(method = "lm") + labs(title = "Symboling vs. Price", x = "Symboling", y = "Price")
+ggplot(data.train, aes(x = wheelbase, y = price)) + geom_point() + geom_smooth(method = "lm") + labs(title = "Wheel Base vs. Price", x = "Wheel Base", y = "Price")
+ggplot(data.train, aes(x = carlength, y = price)) + geom_point() + geom_smooth(method = "lm") + labs(title = "Car Length vs. Price", x = "Car Length", y = "Price")
+ggplot(data.train, aes(x = carwidth, y = price)) + geom_point() + geom_smooth(method = "lm") + labs(title = "Car Width vs. Price", x = "Car Width", y = "Price")
+ggplot(data.train, aes(x = carheight, y = price)) + geom_point() + geom_smooth(method = "lm") + labs(title = "Car Height vs. Price", x = "Car Height", y = "Price")
+ggplot(data.train, aes(x = curbweight, y = price)) + geom_point() + geom_smooth(method = "lm") + labs(title = "Curb Weight vs. Price", x = "Curb Weight", y = "Price")
+ggplot(data.train, aes(x = enginesize, y = price)) + geom_point() + geom_smooth(method = "lm") + labs(title = "Engine Size vs. Price", x = "Engine Size", y = "Price")
+ggplot(data.train, aes(x = boreratio, y = price)) + geom_point() + geom_smooth(method = "lm") + labs(title = "Bore Ratio vs. Price", x = "Bore Ratio", y = "Price")
+ggplot(data.train, aes(x = stroke, y = price)) + geom_point() + geom_smooth(method = "lm") + labs(title = "Stroke vs. Price", x = "Stroke", y = "Price")
+ggplot(data.train, aes(x = compressionratio, y = price)) + geom_point() + geom_smooth(method = "lm") + labs(title = "Compression Ratio vs. Price", x = "Compression Ratio", y = "Price")
+ggplot(data.train, aes(x = horsepower, y = price)) + geom_point() + geom_smooth(method = "lm") + labs(title = "Horsepower vs. Price", x = "Horsepower", y = "Price")
+ggplot(data.train, aes(x = peakrpm, y = price)) + geom_point() + geom_smooth(method = "lm") + labs(title = "Peak RPM vs. Price", x = "Peak RPM", y = "Price")
+ggplot(data.train, aes(x = citympg, y = price)) + geom_point() + geom_smooth(method = "lm") + labs(title = "City MPG vs. Price", x = "City MPG", y = "Price")
+ggplot(data.train, aes(x = highwaympg, y = price)) + geom_point() + geom_smooth(method = "lm") + labs(title = "Highway MPG vs. Price", x = "Highway MPG", y = "Price")
+ggplot(data.train, aes(x = fueltype, y = price)) + geom_point() + geom_smooth(method = "lm") + labs(title = "Fuel Type vs. Price", x = "Fuel Type", y = "Price")
+ggplot(data.train, aes(x = aspiration, y = price)) + geom_point() + geom_smooth(method = "lm") + labs(title = "Aspiration vs. Price", x = "Aspiration", y = "Price")
+ggplot(data.train, aes(x = doornumber, y = price)) + geom_point() + geom_smooth(method = "lm") + labs(title = "Door Number vs. Price", x = "Door Number", y = "Price")
+ggplot(data.train, aes(x = carbody, y = price)) + geom_point() + geom_smooth(method = "lm") + labs(title = "Car Body vs. Price", x = "Car Body", y = "Price")
+ggplot(data.train, aes(x = drivewheel, y = price)) + geom_point() + geom_smooth(method = "lm") + labs(title = "Drive Wheel vs. Price", x = "Drive Wheel", y = "Price")
+ggplot(data.train, aes(x = enginelocation, y = price)) + geom_point() + geom_smooth(method = "lm") + labs(title = "Engine Location vs. Price", x = "Engine Location", y = "Price")
+ggplot(data.train, aes(x = enginetype, y = price)) + geom_point() + geom_smooth(method = "lm") + labs(title = "Engine Type vs. Price", x = "Engine Type", y = "Price")
+ggplot(data.train, aes(x = cylindernumber, y = price)) + geom_point() + geom_smooth(method = "lm") + labs(title = "Cylinder Number vs. Price", x = "Cylinder Number", y = "Price")
+ggplot(data.train, aes(x = fuelsystem, y = price)) + geom_point() + geom_smooth(method = "lm") + labs(title = "Fuel System vs. Price", x = "Fuel System", y = "Price")
+
+
+```
+
+
+# Apply Transformations to citympg and highwaympg as they are exponential decay functions.
+
+```{r}
+data.train$citympg <- log(data.train$citympg)
+data.train$highwaympg <- log(data.train$highwaympg)
+
+data.test$citympg <- log(data.test$citympg)
+data.test$highwaympg <- log(data.test$highwaympg)
+
+ggplot(data.train, aes(x = citympg, y = price)) + geom_point() + geom_smooth(method = "lm") + labs(title = "City MPG vs. Price", x = "City MPG", y = "Price")
+ggplot(data.train, aes(x = highwaympg, y = price)) + geom_point() + geom_smooth(method = "lm") + labs(title = "Highway MPG vs. Price", x = "Highway MPG", y = "Price")
+
+
+```
+
+# selected variables that were chosen after looking at scatterplots of predictors and fitting model.
+```{r}
+selected.vars.train <- data.train[, c("price", "wheelbase", "carlength", "carwidth", "curbweight", 
+                            "enginesize", "boreratio", "horsepower", "citympg", 
+                            "highwaympg", "cylindernumber", "carbody", "enginelocation"
+                            )]
+selected.vars.train
+
+
+selected.vars.test <- data.test[, c("price", "wheelbase", "carlength", "carwidth", "curbweight", 
+                            "enginesize", "boreratio", "horsepower", "citympg", 
+                            "highwaympg", "cylindernumber", "carbody", "enginelocation"
+                            )]
+
+```
+
+
+Variables that seem to have a relationship with price by looking at the predictor vs price scatterplots:
+  wheelbase, carlength, carwidth, curbweight, enginesize, boreratio, horsepower, mpg, highwaympg
+
+INDICATOR VARIABLES that seem to have a relationship with price by looking at the predictor vs price scatterplots:
+  fueltype, aspiration, drivewheel, cylindernumber
+
+*variables that don't have enough data/dont show relationship are removed
+
+These variables serve a baseline to our given model, and do NOT represent final selection of variables for the model.
+
+##STEPWISE SELECTION
+
+```{r}
+best_stepwise_subset <- regsubsets(price ~ ., data=selected.vars.train,nvmax=18)
+summary_best_stepwise_subset <- summary(best_stepwise_subset)
+summary_best_stepwise_subset
+plot(summary_best_stepwise_subset$adjr2, type="l")
+plot(summary_best_stepwise_subset$bic, type="l")
+plot(summary_best_stepwise_subset$cp, type="l")
+```
+##forward selection
+
+```{r}
+best_forward_subset <- regsubsets(price ~ ., data=selected.vars.train,nvmax=18,, method = "forward")
+summary_best_forward_subset <- summary(best_forward_subset)
+summary_best_forward_subset
+plot(summary_best_forward_subset$adjr2, type="l")
+plot(summary_best_forward_subset$bic, type="l")
+plot(summary_best_forward_subset$cp, type="l")
+```
+
+
+##backward selection
+
+```{r}
+best_backward_subset <- regsubsets(price ~ ., data=selected.vars.train,nvmax=18,, method = "backward")
+summary_best_backward_subset <- summary(best_backward_subset)
+summary_best_backward_subset
+plot(summary_best_backward_subset$adjr2, type="l")
+plot(summary_best_backward_subset$bic, type="l")
+plot(summary_best_backward_subset$cp, type="l")
+
+which.max(summary_best_backward_subset$adjr2)
+which.min(summary_best_backward_subset$bic)
+which.min(summary_best_backward_subset$cp)
+```
+
+# Lasso Model Fit
+
+```{r}
+set.seed(1234)
+# create lasso model
+interaction_matrix_train <- model.matrix(price ~ .^2, data = selected.vars.train)[, -1]
+y_train <- selected.vars.train$price
+lasso_model <- glmnet(interaction_matrix_train, y_train, alpha = 1)
+plot(lasso_model, xvar = "lambda", label = TRUE)
+
+# CV
+cv_model <- cv.glmnet(interaction_matrix_train, y_train, alpha = 1)
+plot(cv_model)
+
+# print best lambda
+best_lambda <- cv_model$lambda.min
+print("Best lambda: ")
+print(best_lambda)
+
+# refit lasso model to best lambda
+best_lasso_model <- glmnet(interaction_matrix_train, y_train, alpha = 1, lambda = best_lambda)
+
+#  nonzero coefficients
+non_zero_coefs <- coef(cv_model, s = "lambda.min")[-1]  # Remove intercept
+non_zero_coefs <- non_zero_coefs[non_zero_coefs != 0]
+options(scipen = 999)
+print(coef(best_lasso_model))
+
+```
+# Non interaction model calculation (extremely similar to the interaction, but with less predictive power)
+```{r}
+# create lasso model
+x_matrix_non_interaction <- model.matrix(price ~ ., data = selected.vars.train)[, -1]
+y_train <- selected.vars.train$price
+lasso_model_non_inter <- glmnet(x_matrix_non_interaction, y_train, alpha = 1)
+plot(lasso_model, xvar = "lambda", label = TRUE)
+
+# CV
+cv_model_noninter <- cv.glmnet(x_matrix_non_interaction, y_train, alpha = 1)
+plot(cv_model_noninter)
+
+# print best lambda
+best_lambda_non_inter <- cv_model$lambda.min
+print("Best lambda: ")
+print(best_lambda)
+
+# refit lasso model to best lambda
+best_lasso_model_non_inter <- glmnet(x_matrix_non_interaction, y_train, alpha = 1, lambda = best_lambda)
+
+#  nonzero coefficients
+non_zero_coefs <- coef(cv_model_noninter, s = "lambda.min")[-1]  # Remove intercept
+non_zero_coefs <- non_zero_coefs[non_zero_coefs != 0]
+options(scipen = 999)
+print(coef(best_lasso_model_non_inter))
+
+
+```
+
+
+
+# Residual calculation with test set
+```{r}
+set.seed(1234)
+
+
+interaction_matrix_test <- model.matrix(price ~ .^2, data = selected.vars.test)[, -1]
+interaction_matrix_test <- interaction_matrix_test[, colnames(interaction_matrix_train)]
+
+fitted_values <- predict(best_lasso_model, newx = interaction_matrix_test, s = cv_model$lambda.min)
+
+
+# Compute residuals
+residuals <- data.test$price - fitted_values
+
+# remove NA or infinite values
+residuals <- residuals[is.finite(residuals)]
+
+# Print mean and sd of residuals
+print("Mean of residuals:")
+mean(residuals)
+print("Standard Deviation of Residuals:")
+sd(residuals)
+
+# Plot the residuals
+plot(residuals, main = "Residuals of the LASSO Model (Test Dataset)", xlab = "Index", ylab = "Residuals")
+
+```
+
+
+#Predicting on Test Dataset
+
+```{r}
+set.seed(1234)
+y_test <- data.test$price
+
+```
+
+```{r}
+
+test_preds <- predict(best_lasso_model, newx = interaction_matrix_test, s = cv_model$lambda.min)
+```
+
+# Calculating Test Error For Prediction Accuracy:
+```{r}
+#For mean square error
+MSE <- mean((test_preds - data.test$price)^2)
+MSE
+```
+```{R}
+#For RMSE
+RMSE <- sqrt(MSE)
+RMSE
+```
+So model's predictions off by ~3100 dollars on average.
+Considering the scale of price ranges from ~$5100 to  ~ $45400, this model could be considered a could fit.
+
+```{r}
+#For Mean Absolute Error
+MAE <- mean(abs(test_preds - data.test$price))
+MAE
+```
+
+```{r}
+sd(data.test$price)
+
+```
+
+# Calculating R-Squared (if needed)
+```{r}
+#Residual sum of squares:
+RSS <- sum((test_preds - data.test$price)^2)
+
+#Total sum of squares:
+TSS <- sum((test_preds - mean(data.test$price))^2)
+           
+#R-square:
+Rsquare <- 1 -(RSS/TSS)
+Rsquare
+           
+```
+
+```{r}
+test_preds <- as.vector(test_preds)
+plot_data <- data.frame(True = y_test, Predicted = test_preds)
+
+ggplot(plot_data, aes(x = True, y = Predicted)) +
+  geom_point(color = 'blue') +  # Scatter plot of true vs predicted
+  geom_abline(slope = 1, intercept = 0, color = 'red', linetype = 'dashed') +  # Line of equality (true = predicted)
+  labs(title = "True vs Predicted Values (LASSO Model)",
+       x = "True Values",
+       y = "Predicted Values") +
+  theme_minimal()
+
+```
+
