@@ -11,3 +11,5 @@ I used metrics such as AIC, BIC, Cp Mallows relationships to define bias/varianc
 ![image](https://github.com/user-attachments/assets/81eaa745-08be-48a4-906c-396483cd7823)
 
 ![image](https://github.com/user-attachments/assets/b9a0d201-3a02-4624-a9e1-2adce9464ea0)
+
+![image](https://github.com/user-attachments/assets/1e550b49-fa9c-44a0-83e8-5ed8f4f97afc)
