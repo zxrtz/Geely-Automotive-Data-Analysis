@@ -8,6 +8,9 @@ To do this, I:
 - Concluded that certain predictors like horsepower, body type (convertible, hatchback, etc.), and wheelbase (car width) are significant
 As a result, **we fitted used a commonly known data science regression method**, and **achieved a predictive fit of 80% accuracy**.
 
+![image](https://github.com/user-attachments/assets/d2503755-d78a-448c-9ebf-c08b731e9281)
+
+Below is a more in-depth explanation of the project.
 
 In this project, I tested various regression models, namely LASSO Regressions with k-fold Cross Validation.
 I used metrics such as AIC, BIC, Cp Mallows relationships to define bias/variance tradeoff.
