@@ -5,7 +5,7 @@ This project seeked to **successfully predict car market prices** using car spec
 To do this, I:
 - Collaborated with a team to explore different modern regression models.
 - Delivered the identification of the certain predictors that would be able to predict the car market prices
-- Concluded that certain predictors like horsepower, body type (convertible, hatchback, etc.), and wheelbase (car width) are significant
+- Concluded that certain predictors like horsepower, car body (convertible, hatchback, etc.), and wheelbase (car width) are significant
 As a result, **we fitted used a commonly known data science regression method**, and **achieved a predictive fit of 80% accuracy**.
 
 ![image](https://github.com/user-attachments/assets/d2503755-d78a-448c-9ebf-c08b731e9281)
