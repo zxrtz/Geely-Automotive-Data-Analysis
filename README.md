@@ -5,6 +5,8 @@ This project seeked to **successfully predict car market prices** using car spec
 To do this, I:
 - Collaborated with a team to explore different modern regression models.
 - Delivered the identification of the certain predictors that would be able to predict the car market prices
+- Concluded that certain predictors like horsepower, body type (convertible, hatchback, etc.), and wheelbase (car width) are significant
+As a result, we fitted used a commonly known data science regression method, and achieved a predictive fit of 80% accuracy.
 
 In this project, I tested various regression models, namely LASSO Regressions with k-fold Cross Validation.
 I used metrics such as AIC, BIC, Cp Mallows relationships to define bias/variance tradeoff.
