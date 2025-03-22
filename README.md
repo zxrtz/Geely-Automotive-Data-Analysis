@@ -1,6 +1,8 @@
 # Geely-Automotive-Data-Analysis
 R Studio Data Analysis - Analyzing Car Data to Create a Predictive Model for Car Prices
 
+This project seeked to **successfully predict car market prices** using car specifications such as metrics like horsepower, wheel base, weight, etc.
+
 In this project, I tested various regression models, namely LASSO Regressions with k-fold Cross Validation.
 I used metrics such as AIC, BIC, Cp Mallows relationships to define bias/variance tradeoff.
 
