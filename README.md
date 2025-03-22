@@ -2,6 +2,9 @@
 R Studio Data Analysis - Analyzing Car Data to Create a Predictive Model for Car Prices
 
 This project seeked to **successfully predict car market prices** using car specifications such as metrics like horsepower, wheel base, weight, etc.
+To do this, I:
+- Collaborated with a team to explore different modern regression models.
+- Delivered the identification of the certain predictors that would be able to predict the car market prices
 
 In this project, I tested various regression models, namely LASSO Regressions with k-fold Cross Validation.
 I used metrics such as AIC, BIC, Cp Mallows relationships to define bias/variance tradeoff.
